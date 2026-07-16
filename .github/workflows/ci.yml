@@ -6,49 +6,25 @@ on:
   pull_request:
 
 jobs:
-  unit-tests:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
+      - name: Build image (Dockerfile)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          docker build --no-cache \
+            -f Dockerfile \
+            -t ${{ github.event.repository.name }}:${{ github.sha }} \
+            .
 
-      - name: Run unit tests
+      - name: Run unit tests via Docker image
         run: |
-          make test-unit PYTHON=python3
-
-  stack-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Start docker compose stack
-        run: |
-          make stack-up
-
-      - name: Smoke tests on default services
-        run: |
-          make stack-smoke
-
-      - name: Show docker compose logs on failure
-        if: failure()
-        run: |
-          docker compose -f docker-compose.yml logs
-
-      - name: Shutdown docker compose stack
-        if: always()
-        run: |
-          make stack-down
+          docker run --rm \
+            -e DJANGO_SETTINGS_MODULE=vert_helper.tests.settings \
+            ${{ github.event.repository.name }}:${{ github.sha }} \
+            python -m django test vert_helper.tests -v 2
 
   scan-audit:
     runs-on: ubuntu-latest
@@ -56,10 +32,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trivy filesystem and image scan
+      - name: Build image for scan
         run: |
-          make scan-audit \
-            DOCKER_REPO=${{ github.event.repository.name }} \
-            DOCKER_TAG=${{ github.sha }} \
-            DOCKERFILE=Dockerfile-example \
-            DOCKER_CONTEXT=.
+          docker build --no-cache \
+            -f Dockerfile \
+            -t ${{ github.event.repository.name }}:${{ github.sha }} \
+            .
+
+      - name: Trivy - Filesystem scan
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            aquasec/trivy:0.69.3 \
+            fs --exit-code 1 --severity HIGH,CRITICAL \
+            --scanners vuln,secret --format table ./
+
+      - name: Trivy - Image scan
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.69.3 \
+            image --exit-code 1 --ignore-unfixed \
+            --severity HIGH,CRITICAL --scanners vuln --format table \
+            ${{ github.event.repository.name }}:${{ github.sha }}

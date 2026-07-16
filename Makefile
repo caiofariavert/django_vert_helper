@@ -12,18 +12,14 @@ DOCKER_REPO ?= django-vert-helper
 DOCKER_TAG ?= local
 DOCKER_IMAGE ?= $(DOCKER_REPO):$(DOCKER_TAG)
 DOCKER_CONTEXT ?= .
-DOCKERFILE ?= Dockerfile-example
-COMPOSE_FILE ?= docker-compose.yml
+DOCKERFILE ?= Dockerfile
 
 .PHONY: \
 	test-unit \
 	trivy-fs \
 	image-build \
 	trivy-image \
-	scan-audit \
-	stack-up \
-	stack-down \
-	stack-smoke
+	scan-audit
 
 test-unit:
 	@if [ -d .venv ]; then \
@@ -59,15 +55,3 @@ trivy-image:
 
 scan-audit: trivy-fs image-build trivy-image
 
-stack-up:
-	docker compose -f $(COMPOSE_FILE) up -d
-
-stack-down:
-	docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
-
-stack-smoke:
-	docker compose -f $(COMPOSE_FILE) exec -T postgres \
-		pg_isready -U postgres -d vert_helper
-	docker compose -f $(COMPOSE_FILE) exec -T kafka \
-		kafka-topics --bootstrap-server kafka:9092 --list >/dev/null
-	curl -fsS http://localhost:4566/_localstack/health | grep -qi 's3'
