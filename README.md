@@ -41,3 +41,8 @@ if cfg.enabled:
     print(cfg.api_timeout)
     print(cfg.service_url)
 ```
+
+## Documentacao Tecnica
+
+- Especificacao tecnica da implementacao atual (V1): `docs/v1/ESPECIFICACAO_TECNICA.md`
+- Especificacao tecnica agnostica (framework/linguagem): `docs/v1/ESPECIFICACAO_TECNICA_AGNOSTICA.md`
