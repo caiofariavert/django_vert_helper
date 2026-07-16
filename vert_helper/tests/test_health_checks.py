@@ -10,6 +10,12 @@ from vert_helper.health_checks.types import HealthCheckResult
 
 
 class PostgresHealthCheckTests(SimpleTestCase):
+    def test_postgres_returns_unknown_without_database(self):
+        result = check_postgres({"host": "localhost"})
+
+        self.assertEqual(result.status, "UNKNOWN")
+        self.assertIn("database", result.message)
+
     @patch("vert_helper.health_checks.postgres.psycopg2.connect")
     def test_postgres_returns_ok_when_query_succeeds(self, mock_connect):
         conn = MagicMock()
@@ -44,6 +50,12 @@ class PostgresHealthCheckTests(SimpleTestCase):
 
 
 class KafkaHealthCheckTests(SimpleTestCase):
+    def test_kafka_returns_unknown_without_bootstrap_servers(self):
+        result = check_kafka({})
+
+        self.assertEqual(result.status, "UNKNOWN")
+        self.assertIn("bootstrap_servers", result.message)
+
     @patch("vert_helper.health_checks.kafka.AdminClient")
     def test_kafka_returns_ok_when_admin_client_works(self, mock_admin_client):
         admin = MagicMock()

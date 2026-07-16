@@ -42,3 +42,8 @@ class AsyncManagerTests(SimpleTestCase):
     def test_returns_message_when_scheduler_not_configured(self):
         result = ensure_scheduler_registration()
         self.assertIn("SCHEDULER vazio", result)
+
+    @override_settings(VERT_HELPER={"SCHEDULER": "abc"})
+    def test_returns_message_when_scheduler_is_not_supported(self):
+        result = ensure_scheduler_registration()
+        self.assertIn("nao suportado", result)

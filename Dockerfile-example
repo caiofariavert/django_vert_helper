@@ -15,7 +15,7 @@ RUN apt-get update \
 WORKDIR /code
 
 # COPY ./src/Pipfile.lock ./src/Pipfile ./
-COPY ./src/requirements.txt ./
+COPY ./requirements.txt ./
 COPY ./setup.cfg .
 
 RUN pip install --upgrade pip setuptools wheel
@@ -25,7 +25,7 @@ RUN pip install -r requirements.txt
 # COPY .docker/ssh/* /root/.ssh/
 # RUN chmod -R 600 /root/.ssh/id_*
 
-COPY ./src ./
+COPY ./ ./
 
 # set date on image
 RUN rm -f /etc/localtime
