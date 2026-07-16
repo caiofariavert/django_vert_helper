@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
+from vert_helper.async_manager import ensure_scheduler_registration
 from vert_helper.sync import (
-    ensure_scheduler_registration,
     sync_actions_from_registry,
     sync_services_from_settings,
 )

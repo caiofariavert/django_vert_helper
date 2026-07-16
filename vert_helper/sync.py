@@ -111,20 +111,3 @@ def sync_actions_from_registry() -> dict[str, int]:
         "updated": updated,
         "deleted": deleted,
     }
-
-
-def ensure_scheduler_registration() -> str:
-    config = getattr(settings, "VERT_HELPER", {}) or {}
-    scheduler = config.get("SCHEDULER")
-    interval = int(config.get("HEALTH_CHECK_INTERVAL") or 600)
-
-    if not scheduler:
-        return "SCHEDULER vazio. Nenhuma tarefa agendada."
-
-    scheduler = str(scheduler).strip().lower()
-    if scheduler == "django_q":
-        return f"Scheduler django_q configurado. Intervalo: {interval}s."
-    if scheduler == "rq":
-        return f"Scheduler rq configurado. Intervalo: {interval}s."
-
-    return f"Scheduler '{scheduler}' nao suportado. Nenhuma tarefa registrada."
