@@ -103,7 +103,34 @@ from vert_helper import helper_action
     slug="generate-report",
     name="Gerar Relatório",
     description="Gera um relatório em PDF ou CSV",
-    services=["S3", "POSTGRESQL"]  # Serviços relacionados
+    services=["S3", "POSTGRESQL"],  # Serviços relacionados
+    questions=[
+        {
+            "label": "Qual é o formato do relatório?",
+            "type": "radio",
+            "options": ["PDF", "CSV"],
+            "is_required": True,
+            "action_kwarg": "format_type",
+            "children": [
+                {
+                    "label": "Qual período?",
+                    "type": "select",
+                    "options": ["monthly", "yearly"],
+                    "is_required": True,
+                    "action_kwarg": "report_type",
+                    "parent_value": "PDF"
+                },
+                {
+                    "label": "Incluir gráficos?",
+                    "type": "radio",
+                    "options": ["Sim", "Não"],
+                    "is_required": True,
+                    "action_kwarg": "include_charts",
+                    "parent_value": "CSV"
+                }
+            ]
+        }
+    ]
 )
 def generate_report(responses):
     """
@@ -144,14 +171,22 @@ def generate_report(responses):
         }
 ```
 
-### Configurar Formulário Condicional
+### Configurar Questions no decorator (recomendado)
 
-Use Django Admin para criar as perguntas:
+Defina o formulário da action no campo `questions` do decorator e sincronize com o comando de setup/sync.
 
-1. Acesse `http://localhost:8000/admin/`
-2. Vá para `Vert Helper > Questions`
-3. Crie a primeira pergunta com `is_first = True`
-4. Crie perguntas filhas com `parent_question` e `parent_value`
+Campos aceitos por pergunta:
+
+- `label` (obrigatório)
+- `type` (obrigatório): `radio`, `text`, `textarea`, `file`, `select`
+- `options` (opcional)
+- `is_required` (opcional)
+- `action_kwarg` (opcional)
+- `children` (opcional)
+
+Campos extras em cada item de `children`:
+
+- `parent_value`: valor da resposta da pergunta pai que habilita a filha
 
 **Exemplo prático:**
 
@@ -185,9 +220,21 @@ Pergunta 1 (is_first=True):
     └─ is_required: True
 ```
 
-**Mapeamento de Kwargs:**
-- `action_kwarg` deve corresponder aos parâmetros esperados pela função
-- O decorator automático mapeia respostas → função
+**Sincronização:**
+- Execute `python manage.py vert_helper_setup` para sincronizar serviços, ações e questions
+- Ou execute `python manage.py vert_helper_sync_actions` para sincronizar apenas ações e questions
+- Na sincronização, as questions persistidas da action são substituídas pela árvore definida no decorator
+
+### Configurar Formulário via Admin (opcional)
+
+Se você preferir ajuste manual:
+
+1. Acesse `http://localhost:8000/admin/`
+2. Vá para `Vert Helper > Questions`
+3. Crie a primeira pergunta com `is_first = True`
+4. Crie perguntas filhas com `parent_question` e `parent_value`
+
+Observação: ao executar sync de actions, as questions da action podem ser sobrescritas pela definição de `questions` no código.
 
 ### Sincronizar Actions
 
@@ -603,8 +650,10 @@ Acesse: `http://localhost:8000/admin/`
 
 ### Formulário não está exibindo perguntas
 
-1. Verifique se a ação tem pelo menos uma pergunta com `is_first = True`
-2. Verifique se `parent_question` e `parent_value` estão corretos
+1. Verifique se a action tem `questions` declaradas no decorator
+2. Execute `python manage.py vert_helper_setup` ou `python manage.py vert_helper_sync_actions`
+3. Se usar fluxo manual no admin, verifique se há ao menos uma pergunta com `is_first = True`
+4. Verifique se `parent_question` e `parent_value` estão corretos
 
 ## 📞 Suporte
 

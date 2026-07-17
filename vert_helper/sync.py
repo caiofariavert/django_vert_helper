@@ -113,6 +113,7 @@ def _create_question_recursive(action: Action, question_data: dict, parent: Acti
         action_kwarg=question_data.get("action_kwarg"),
         parent=parent,
         parent_value=question_data.get("parent_value"),
+        is_first=True if parent is None else False,
     )
     for child_data in question_data.get("children", []):
         _create_question_recursive(action, child_data, parent=question)
