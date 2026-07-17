@@ -4,13 +4,6 @@ from .types import HealthCheckResult
 
 
 def check_s3(context: dict) -> HealthCheckResult:
-    bucket_name = context.get("bucket_name")
-    if not bucket_name:
-        return HealthCheckResult(
-            status="UNKNOWN",
-            message="bucket_name nao informado",
-        )
-
     try:
         import boto3
         from botocore.exceptions import BotoCoreError, ClientError
@@ -27,11 +20,10 @@ def check_s3(context: dict) -> HealthCheckResult:
             "aws_secret_access_key": context.get("aws_secret_access_key", None),
             "endpoint_url": context.get("endpoint_url", None),
         }
-        client = boto3.client(
+        boto3.client(
             "s3",
             **context_boto3,
         )
-        client.head_bucket(Bucket=bucket_name)
         return HealthCheckResult(status="OK")
     except (BotoCoreError, ClientError) as exc:
         return HealthCheckResult(status="FAILED", message=str(exc))
