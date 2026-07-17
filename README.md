@@ -163,7 +163,11 @@ o `vert_helper_setup` registra duas tarefas:
 
 Se `SCHEDULER` estiver vazio (`None`), nenhuma tarefa é agendada automaticamente.
 
+### Mais informações
+- Manual de uso: `MANUAL_DE_USO.MD`
+
 ## Documentacao Tecnica
 
 - Especificacao tecnica da implementacao atual (V1): `docs/v1/ESPECIFICACAO_TECNICA.md`
 - Especificacao tecnica agnostica (framework/linguagem): `docs/v1/ESPECIFICACAO_TECNICA_AGNOSTICA.md`
+
