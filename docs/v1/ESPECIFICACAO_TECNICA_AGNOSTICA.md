@@ -304,6 +304,14 @@ Estratégia recomendada:
 
 - Arquivo JSON estático atualizado por job externo
 
+Recomendação de execução em container:
+
+- O processo principal da aplicação deve executar como usuário não-root
+- A atualização periódica do JSON pode usar:
+  - scheduler externo (Kubernetes CronJob, sidecar, host scheduler), ou
+  - loop em background no entrypoint/comando do container (ex: a cada 600s)
+- Evitar depender de cron de sistema no runtime quando isso exigir root
+
 ---
 
 ## 7. Configuração Canônica

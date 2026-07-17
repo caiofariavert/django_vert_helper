@@ -69,16 +69,11 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
         return [get_permission_class()()]
 
     def get_queryset(self):
-        failed_service_names = ServiceHealth.objects.filter(
-            service=OuterRef("pk"),
+        failed_actions = ServiceHealth.objects.filter(
+            service__actions=OuterRef("pk"),
+            service__is_active=True,
             status=ServiceHealth.Status.FAILED,
         )
-
-        failed_actions = Action.objects.filter(
-            status=Action.Status.ACTIVE,
-            services__health_logs__status=ServiceHealth.Status.FAILED,
-            services__is_active=True,
-        ).values("pk")
 
         qs = (
             Action.objects.filter(status=Action.Status.ACTIVE)
@@ -90,13 +85,8 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
                 ),
             )
             .annotate(
-                has_failed_service=Exists(
-                    failed_service_names.filter(
-                        health_logs__service_id=OuterRef("services__id")
-                    )
-                ),
                 is_recommended=Exists(
-                    failed_actions.filter(pk=OuterRef("pk"))
+                    failed_actions
                 ),
             )
             .distinct()
