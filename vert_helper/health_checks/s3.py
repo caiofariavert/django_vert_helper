@@ -21,11 +21,15 @@ def check_s3(context: dict) -> HealthCheckResult:
         )
 
     try:
+        context_boto3 = {
+            "region_name": context.get("region_name", None),
+            "aws_access_key_id": context.get("aws_access_key_id", None),
+            "aws_secret_access_key": context.get("aws_secret_access_key", None),
+            "endpoint_url": context.get("endpoint_url", None),
+        }
         client = boto3.client(
             "s3",
-            aws_access_key_id=context.get("aws_access_key_id"),
-            aws_secret_access_key=context.get("aws_secret_access_key"),
-            region_name=context.get("region_name"),
+            **context_boto3,
         )
         client.head_bucket(Bucket=bucket_name)
         return HealthCheckResult(status="OK")
