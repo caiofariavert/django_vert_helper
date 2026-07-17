@@ -67,6 +67,58 @@ def sync_services_from_settings() -> dict[str, int]:
 
 
 @transaction.atomic
+def _register_action_questions(action: Action, questions: list[dict]) -> None:
+    """
+     Registra as perguntas associadas a uma ação no banco de dados.
+     questions example:
+     [
+         {
+             "label": "Pergunta 1",
+             "type": "text",
+             "options": ["Opção 1", "Opção 2"],
+             "is_required": True,
+             "action_kwarg": "pergunta_1",
+             "children": [
+                 {
+                     "label": "Pergunta 1.1",
+                     "type": "text",
+                     "options": ["Opção 1", "Opção 2"],
+                     "is_required": True,
+                     "action_kwarg": "pergunta_1_1",
+                     "parent_value": "Opção 1",
+                 },
+                 {
+                        "label": "Pergunta 1.2",
+                        "type": "text",
+                        "options": ["Opção 1", "Opção 2"],
+                        "is_required": True,
+                        "action_kwarg": "pergunta_1_2",
+                        "parent_value": "Opção 2",
+                 }
+             ]
+         }
+     ]
+    """
+    action.questions.all().delete()
+    for question_data in questions:
+        _create_question_recursive(action, question_data)
+
+
+def _create_question_recursive(action: Action, question_data: dict, parent: Action.Question | None = None) -> None:
+    question = action.questions.create(
+        label=question_data["label"],
+        type=question_data["type"],
+        options=question_data.get("options", []),
+        is_required=question_data.get("is_required", False),
+        action_kwarg=question_data.get("action_kwarg"),
+        parent=parent,
+        parent_value=question_data.get("parent_value"),
+    )
+    for child_data in question_data.get("children", []):
+        _create_question_recursive(action, child_data, parent=question)
+
+
+@transaction.atomic
 def sync_actions_from_registry() -> dict[str, int]:
     autodiscover_actions()
     registered = get_registered_actions()
@@ -97,6 +149,8 @@ def sync_actions_from_registry() -> dict[str, int]:
             if name in active_services
         ]
         action.services.set(service_objects)
+        if action_def.questions:
+            _register_action_questions(action, action_def.questions)
 
         if was_created:
             created += 1

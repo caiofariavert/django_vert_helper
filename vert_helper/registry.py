@@ -12,6 +12,7 @@ class RegisteredAction:
     services: tuple[str, ...]
     function_path: str
     function: Callable
+    questions: list[dict] | None = None
 
 
 _registered_actions: dict[str, RegisteredAction] = {}

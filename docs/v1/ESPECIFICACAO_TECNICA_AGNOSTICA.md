@@ -218,7 +218,47 @@ Saída:
 - data: objeto opcional
 - steps: lista opcional
 
-### 5.3 Contrato de Scheduler Adapter
+### 5.3 Contrato de Registro de Action em Código
+
+Cada action registrada em código deve conter, no mínimo:
+
+- slug
+- name
+- description
+- services (lista de nomes de serviço)
+- function_path (ou identificador equivalente do handler)
+- function (referência executável)
+
+Opcionalmente, pode conter `questions`, no formato:
+
+```
+[
+  {
+    "label": "Pergunta raiz",
+    "type": "radio",
+    "options": ["A", "B"],
+    "is_required": true,
+    "action_kwarg": "arg_name",
+    "children": [
+      {
+        "label": "Pergunta filha",
+        "type": "text",
+        "is_required": true,
+        "action_kwarg": "child_arg",
+        "parent_value": "A"
+      }
+    ]
+  }
+]
+```
+
+Regras:
+
+- `children` define relacionamento recursivo pai/filho
+- `parent_value` na filha define quando ela deve ser ativada
+- `action_kwarg` define o nome do argumento de entrada do handler
+
+### 5.4 Contrato de Scheduler Adapter
 
 Interface mínima:
 
@@ -366,6 +406,13 @@ Deve executar:
 - Descobre handlers registrados em código
 - Cria/atualiza catálogo persistido
 - Remove órfãs (não existem mais no código)
+- Sincroniza perguntas declaradas em `questions` com estrutura recursiva pai/filho
+
+Quando houver `questions` para uma action:
+
+- o conjunto persistido dessa action deve ser substituído integralmente pela versão declarada em código;
+- perguntas filhas devem manter referência explícita da pergunta pai;
+- condições de exibição devem ser persistidas por `parent_value`.
 
 ---
 

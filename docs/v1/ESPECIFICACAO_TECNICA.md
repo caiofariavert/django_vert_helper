@@ -459,7 +459,33 @@ from vert_helper import helper_action
     slug="execute-without-kafka",
     name="Executar sem Kafka",
     description="Executa operação sem dependência do Kafka",
-    services=["S3", "KAFKA"]
+    services=["S3", "KAFKA"],
+    questions=[
+        {
+            "label": "Tipo do arquivo",
+            "type": "radio",
+            "options": ["CSV", "JSON"],
+            "is_required": True,
+            "action_kwarg": "file_type",
+            "children": [
+                {
+                    "label": "Fonte do CSV",
+                    "type": "radio",
+                    "options": ["Arquivo", "URL"],
+                    "is_required": True,
+                    "action_kwarg": "csv_source",
+                    "parent_value": "CSV"
+                },
+                {
+                    "label": "ID do workflow",
+                    "type": "text",
+                    "is_required": True,
+                    "action_kwarg": "workflow_id",
+                    "parent_value": "JSON"
+                }
+            ]
+        }
+    ]
 )
 def execute_without_kafka(responses):
     """
@@ -500,7 +526,30 @@ Executa:
 1. Descobre todas as funções decoradas com `@helper_action`
 2. Cria/atualiza registros em `Action`
 3. **Deleta actions orfãs** (que não existem mais no código)
-4. Sincroniza estrutura de perguntas
+4. Sincroniza estrutura de perguntas a partir do campo `questions` do decorator
+
+### Estrutura de `questions` no decorator
+
+Cada item de `questions` representa uma pergunta raiz e aceita os campos:
+
+- `label` (obrigatório)
+- `type` (obrigatório): `radio`, `text`, `textarea`, `file`, `select`
+- `options` (opcional): lista de opções
+- `is_required` (opcional, padrão `False`)
+- `action_kwarg` (opcional): nome do argumento final para o handler
+- `children` (opcional): lista de perguntas filhas
+
+Cada item em `children` segue a mesma estrutura e pode incluir:
+
+- `parent_value` (opcional): valor da resposta da pergunta pai que habilita a filha
+
+### Regra de sincronização das perguntas
+
+Na sincronização de actions:
+
+- se a action possuir `questions`, as perguntas persistidas da action são removidas e recriadas conforme a árvore declarada;
+- a relação pai/filho é montada recursivamente via `children`;
+- perguntas filhas condicionais devem informar `parent_value` para ativação por resposta.
 
 ---
 

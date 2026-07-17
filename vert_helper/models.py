@@ -121,10 +121,24 @@ class Question(TimeStampedModel):
         blank=True,
         null=True,
         related_name="children",
+        help_text="Pergunta pai que habilita esta pergunta quando respondida com parent_value.",
     )
-    parent_value = models.CharField(max_length=255, blank=True, null=True)
-    action_kwarg = models.CharField(max_length=100, blank=True, null=True)
-    is_first = models.BooleanField(default=False)
+    parent_value = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Valor da resposta da pergunta pai que habilita esta pergunta.",
+    )
+    action_kwarg = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Nome do argumento que será passado para a função da action.",
+    )
+    is_first = models.BooleanField(
+        default=False,
+        help_text="Indica se esta é a primeira pergunta da action.",
+    )
 
     class Meta:
         ordering = ["created_at"]

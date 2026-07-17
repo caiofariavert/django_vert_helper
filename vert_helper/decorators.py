@@ -13,6 +13,7 @@ def helper_action(
     name: str,
     description: str = "",
     services: list[str] | tuple[str, ...] | None = None,
+    questions: list[dict] | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     services = tuple(services or ())
 
@@ -26,6 +27,7 @@ def helper_action(
                 services=services,
                 function_path=function_path,
                 function=func,
+                questions=questions,
             )
         )
 
