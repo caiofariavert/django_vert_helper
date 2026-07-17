@@ -6,7 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.db import transaction
 
-from .models import Action, Service
+from .models import Action, Service, Question
 from .registry import get_registered_actions
 
 
@@ -104,14 +104,14 @@ def _register_action_questions(action: Action, questions: list[dict]) -> None:
         _create_question_recursive(action, question_data)
 
 
-def _create_question_recursive(action: Action, question_data: dict, parent: Action.Question | None = None) -> None:
+def _create_question_recursive(action: Action, question_data: dict, parent: Question | None = None) -> None:
     question = action.questions.create(
         label=question_data["label"],
         type=question_data["type"],
         options=question_data.get("options", []),
         is_required=question_data.get("is_required", False),
         action_kwarg=question_data.get("action_kwarg"),
-        parent=parent,
+        parent_question=parent,
         parent_value=question_data.get("parent_value"),
         is_first=True if parent is None else False,
     )
