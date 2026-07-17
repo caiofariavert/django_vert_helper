@@ -4,20 +4,6 @@ from setuptools import find_packages, setup
 
 BASE_DIR = Path(__file__).parent.resolve()
 README_PATH = BASE_DIR / "README.md"
-REQUIREMENTS_PATH = BASE_DIR / "requirements.txt"
-
-
-def load_requirements(path: Path) -> list[str]:
-    requirements: list[str] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if stripped.startswith(("-r", "--")):
-            continue
-        requirements.append(stripped)
-    return requirements
-
 
 setup(
     name="django-vert-helper",
@@ -31,8 +17,6 @@ setup(
         "django>=5.2.12, <6.0",
         "djangorestframework>=3.15.2, <4.0",
         "django-filter>=24.3, <25.0",
-        "flake8>=7.3.0, <8.0",
-        "isort>=5.13.2, <6.0",
         "django-rq>=4.1, <5.0",
         "django-q2>=1.9.0, <2.0",
         "boto3>=1.42.48, <2.0",
