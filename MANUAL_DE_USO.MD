@@ -383,7 +383,6 @@ curl http://localhost:8000/api/helper/v1/app-health/
 ```json
 {
     "status": "stable",
-    "version": "a1b2c3d4e5f6..."
 }
 ```
 
@@ -490,6 +489,87 @@ python manage.py rqworker
 ## 🐳 Docker
 
 Consulte o `Dockerfile-example` para integração com Docker e cronjob de health check.
+
+### Expor app-health via Nginx
+
+Para garantir que `GET /api/helper/v1/app-health/` funcione mesmo se o Django estiver indisponível, o JSON deve ser servido diretamente pelo Nginx.
+
+1. Gere/atualize o arquivo `/app/health.json` no container (via script periódico).
+2. Configure o Nginx para responder esse arquivo sem proxy para Django.
+
+Exemplo de bloco no Nginx:
+
+```nginx
+location /api/helper/v1/app-health/ {
+    alias /app/health.json;
+    default_type application/json;
+    add_header Cache-Control "no-store";
+}
+```
+
+### Integração no Dockerfile (app + Nginx)
+
+Exemplo mínimo de integração no Dockerfile:
+
+```dockerfile
+FROM python:3.12-trixie
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx curl git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . /app
+COPY ./health_check.sh /app/health_check.sh
+RUN chmod +x /app/health_check.sh
+
+# Configuração do Nginx com endpoint estático de app-health
+COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Atualiza /app/health.json no boot e a cada 10 min (sem cron de sistema)
+CMD ["bash", "-lc", "(sleep 60; bash /app/health_check.sh || true; while true; do sleep 600; bash /app/health_check.sh || true; done) & nginx && exec gunicorn --bind 0.0.0.0:8000 main.wsgi"]
+```
+
+Arquivo de configuração do Nginx (`docker/nginx/default.conf`):
+
+```nginx
+server {
+    listen 8080;
+    server_name _;
+
+    location /api/helper/v1/app-health/ {
+        alias /app/health.json;
+        default_type application/json;
+        add_header Cache-Control "no-store";
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Docker compose
+```docker compose
+services:
+  app:
+    build:
+      context: ./src
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    env_file: ./src/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+```
+
+Observações:
+- O endpoint de app-health deve apontar para o Nginx (porta publicada do container).
+- Se já existir reverse proxy externo (Ingress/Nginx/Traefik), mantenha a mesma lógica: rota de app-health servindo arquivo estático e demais rotas indo para a aplicação.
 
 ## 📊 Django Admin
 

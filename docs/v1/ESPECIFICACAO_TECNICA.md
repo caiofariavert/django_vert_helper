@@ -369,8 +369,7 @@ VERT_HELPER = {
 **Response:**
 ```json
 {
-    "status": "stable",
-    "version": "a1b2c3d4e5f6..."
+    "status": "stable"
 }
 ```
 
@@ -379,7 +378,6 @@ ou
 ```json
 {
     "status": "failed",
-    "version": "a1b2c3d4e5f6...",
     "message": "Application startup failed"
 }
 ```
@@ -516,17 +514,16 @@ Executa:
 set -e
 
 HEALTH_STATUS="stable"
-VERSION=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
 
 # Teste se Django está respondendo
-if ! curl -s http://localhost:8000/healthz/ > /dev/null 2>&1; then
+if ! curl -s http://localhost:8000/api/helper/v1/healthcare/ > /dev/null 2>&1; then
     HEALTH_STATUS="failed"
 fi
 
 cat > /app/health.json << EOF
 {
   "status": "$HEALTH_STATUS",
-  "version": "$VERSION"
+  "timestamp": "$(TZ=America/Sao_Paulo date +"%Y-%m-%dT%H:%M:%S%:z")"
 }
 EOF
 ```

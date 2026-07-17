@@ -304,6 +304,12 @@ Estratégia recomendada:
 
 - Arquivo JSON estático atualizado por job externo
 
+Requisito de exposição HTTP:
+
+- A exposição pública de /api/helper/v1/app-health deve ser feita por Nginx (ou gateway compatível com semântica equivalente de arquivo estático)
+- O Nginx deve responder diretamente o arquivo estático (ex: /app/health.json), sem encaminhar ao runtime da aplicação
+- O endpoint deve permanecer disponível mesmo com indisponibilidade parcial do framework principal
+
 Recomendação de execução em container:
 
 - O processo principal da aplicação deve executar como usuário não-root
@@ -311,6 +317,14 @@ Recomendação de execução em container:
   - scheduler externo (Kubernetes CronJob, sidecar, host scheduler), ou
   - loop em background no entrypoint/comando do container (ex: a cada 600s)
 - Evitar depender de cron de sistema no runtime quando isso exigir root
+
+Exemplo de location Nginx:
+
+location /api/helper/v1/app-health/ {
+    alias /app/health.json;
+    default_type application/json;
+    add_header Cache-Control "no-store";
+}
 
 ---
 

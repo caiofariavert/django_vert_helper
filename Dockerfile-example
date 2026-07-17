@@ -6,8 +6,8 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
     openssh-client \
-    git \
-    curl \
+    nginx \ # NECESSARIO
+    curl \ # NECESSARIO
     librdkafka-dev \
     build-essential \
     postgresql-client \
@@ -53,7 +53,10 @@ ENTRYPOINT ["entrypoint.sh"]
 
 # Atualiza health.json no boot e a cada 10 min via loop bash em background.
 # Evita cron de sistema no runtime para manter o container non-root.
-CMD ["bash", "-lc", "/app/health_check.sh || true; (while true; do sleep 600; /app/health_check.sh || true; done) & exec gunicorn"]
+CMD ["bash", "-lc", "(sleep 60; bash /app/health_check.sh || true; while true; do sleep 600; bash /app/health_check.sh || true; done) & nginx & exec gunicorn"]
+
+# Em ambiente local
+# CMD ["bash", "-lc", "(sleep 60; bash /app/health_check.sh || true; while true; do sleep 600; bash /app/health_check.sh || true; done) & nginx -g 'daemon off;' & exec python manage.py runserver 0.0.0.0:8000"]
 
 # ENTRYPOINT ["./docker_assets/entrypoint.sh"]
 
