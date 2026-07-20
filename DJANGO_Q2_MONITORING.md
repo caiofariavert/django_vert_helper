@@ -209,11 +209,11 @@ python manage.py qcluster
 ```python
 # Investigar qual task está travando
 from django_q.models import OrmQ
-OrmQ.objects.filter(q_name="default", stopped=None).values("func", "args")[:5]
+OrmQ.objects.filter(lock=None,).count()
 
 # Ou verificar tasks falhadas
 from django_q.models import Task
-Task.objects.filter(q_name="default", success=False).order_by("-stopped")[:5]
+Task.objects.filter(name="default", success=False).order_by("-stopped")[:5]
 ```
 
 ---

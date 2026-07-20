@@ -58,7 +58,7 @@ def check_django_q2_queue(context: dict | None = None) -> HealthCheckResult:
         cutoff_time = datetime.utcnow() - timedelta(seconds=60)
 
         recent_tasks = Task.objects.filter(
-            q_name=queue_name,
+            name=queue_name,
             stopped__gte=cutoff_time,
         ).exists()
 
@@ -82,8 +82,7 @@ def check_django_q2_queue(context: dict | None = None) -> HealthCheckResult:
         if stat and not recent_tasks:
             # Verificar se há tasks na fila aguardando
             pending = OrmQ.objects.filter(
-                q_name=queue_name,
-                stopped=None,
+                lock=None,
             ).count()
 
             if pending > 0:
