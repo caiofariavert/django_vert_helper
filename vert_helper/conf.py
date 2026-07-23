@@ -14,6 +14,7 @@ DEFAULTS: dict[str, Any] = {
     "HEALTH_CHECK_AUTO_REGISTER": True,
     "HEALTH_LOG_RETENTION_DAYS": 30,
     "SERVICES": {},
+    "JWT_AUTH_ENABLE": True,
 }
 
 PREFIX = "VERT_HELPER_"
@@ -27,6 +28,7 @@ class VertHelperSettings:
     health_check_auto_register: bool
     health_log_retention_days: int
     services: dict[str, Any]
+    jwt_auth_enable: bool
 
 
 def _coerce_int(key: str, value: Any) -> int:
@@ -104,6 +106,7 @@ def get_vert_helper_settings() -> VertHelperSettings:
             raw["HEALTH_LOG_RETENTION_DAYS"],
         ),
         services=_coerce_mapping("SERVICES", raw["SERVICES"]),
+        jwt_auth_enable=_coerce_bool("JWT_AUTH_ENABLE", raw["JWT_AUTH_ENABLE"]),
     )
 
 

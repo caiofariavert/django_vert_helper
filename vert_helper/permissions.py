@@ -3,12 +3,17 @@ from __future__ import annotations
 from importlib import import_module
 
 from django.conf import settings
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 def get_permission_class():
     config = getattr(settings, "VERT_HELPER", {}) or {}
     permission_path = config.get("PERMISSION_CLASS")
+    jwt_enabled = config.get("JWT_AUTH_ENABLE", True)
+
+    if jwt_enabled:
+        return IsAuthenticated
 
     if not permission_path:
         return AllowAny
@@ -20,3 +25,13 @@ def get_permission_class():
         return permission_class
     except (ValueError, ImportError, AttributeError):
         return AllowAny
+
+
+def get_authentication_class():
+    config = getattr(settings, "VERT_HELPER", {}) or {}
+    jwt_enabled = config.get("JWT_AUTH_ENABLE", True)
+
+    if jwt_enabled:
+        return JWTAuthentication
+
+    return None

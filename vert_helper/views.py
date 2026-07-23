@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from .health_checks import run_health_checks
 from .models import Action, ActionExecution, Question, ServiceHealth
-from .permissions import get_permission_class
+from .permissions import get_authentication_class, get_permission_class
 from .registry import get_registered_actions
 from .serializers import (
     ActionDetailSerializer,
@@ -29,6 +29,12 @@ class VertHelperPagination(PageNumberPagination):
 class HealthcareView(APIView):
     def get_permissions(self):
         return [get_permission_class()()]
+
+    def get_authentication_classes(self):
+        auth_class = get_authentication_class()
+        if auth_class:
+            return [auth_class()]
+        return []
 
     def get(self, request):
         force_refresh = str(
@@ -67,6 +73,12 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self):
         return [get_permission_class()()]
+
+    def get_authentication_classes(self):
+        auth_class = get_authentication_class()
+        if auth_class:
+            return [auth_class()]
+        return []
 
     def get_queryset(self):
         failed_actions = ServiceHealth.objects.filter(
