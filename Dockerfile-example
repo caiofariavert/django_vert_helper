@@ -49,13 +49,17 @@ USER appuser
 
 ENV DJANGO_SETTINGS_MODULE main.settings
 
-ENTRYPOINT ["entrypoint.sh"]
 
 # Atualiza health.json no boot e a cada 10 min via loop bash em background.
 # Evita cron de sistema no runtime para manter o container non-root.
-CMD ["bash", "-lc", "(sleep 60; bash /app/health_check.sh || true; while true; do sleep 600; bash /app/health_check.sh || true; done) & nginx & exec gunicorn"]
+ENTRYPOINT ["sh", "./entrypoint-otel.sh"]
+
+EXPOSE 8000
+# O entrypoint gerencia setup Django, nginx e health-check loop.
+CMD ["gunicorn"]
 
 # Em ambiente local
+# ENTRYPOINT ["entrypoint.sh"]
 # CMD ["bash", "-lc", "(sleep 60; bash /app/health_check.sh || true; while true; do sleep 600; bash /app/health_check.sh || true; done) & nginx -g 'daemon off;' & exec python manage.py runserver 0.0.0.0:8000"]
 
 # ENTRYPOINT ["./docker_assets/entrypoint.sh"]
