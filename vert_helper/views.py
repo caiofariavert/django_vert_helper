@@ -27,8 +27,8 @@ class VertHelperPagination(PageNumberPagination):
 
 
 class HealthcareView(APIView):
-    def get_permissions(self):
-        return [get_permission_class()()]
+    # def get_permissions(self):
+    #     return [get_permission_class()()]
 
     # def get_authentication_classes(self):
     #     auth_class = get_authentication_class()
