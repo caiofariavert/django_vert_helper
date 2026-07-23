@@ -22,3 +22,7 @@ DATABASES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+VERT_HELPER = {
+    "JWT_AUTH_ENABLE": False,
+}
