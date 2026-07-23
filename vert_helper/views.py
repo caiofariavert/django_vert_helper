@@ -30,11 +30,11 @@ class HealthcareView(APIView):
     def get_permissions(self):
         return [get_permission_class()()]
 
-    def get_authentication_classes(self):
-        auth_class = get_authentication_class()
-        if auth_class:
-            return [auth_class()]
-        return []
+    # def get_authentication_classes(self):
+    #     auth_class = get_authentication_class()
+    #     if auth_class:
+    #         return [auth_class()]
+    #     return []
 
     def get(self, request):
         force_refresh = str(
