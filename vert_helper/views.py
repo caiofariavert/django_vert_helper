@@ -5,6 +5,7 @@ from django.db.models.functions import Lower
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -27,14 +28,11 @@ class VertHelperPagination(PageNumberPagination):
 
 
 class HealthcareView(APIView):
-    # def get_permissions(self):
-    #     return [get_permission_class()()]
+    def get_permissions(self):
+        return [AllowAny()]
 
-    # def get_authentication_classes(self):
-    #     auth_class = get_authentication_class()
-    #     if auth_class:
-    #         return [auth_class()]
-    #     return []
+    def get_authenticators(self):
+        return []
 
     def get(self, request):
         force_refresh = str(
@@ -74,7 +72,7 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
     def get_permissions(self):
         return [get_permission_class()()]
 
-    def get_authentication_classes(self):
+    def get_authenticators(self):
         auth_class = get_authentication_class()
         if auth_class:
             return [auth_class()]
